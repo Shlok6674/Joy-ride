@@ -29,7 +29,7 @@
                     <span class="car-category text-muted">{{ i.cname }}</span>
                     <p class="car-price text-primary font-weight-bold mt-2">${{ i.cprice }} <span class="text-muted">/ day</span></p>
                     <div class="d-flex justify-content-between mt-3">
-                        <a href="{% url 'order' i.pk %}" class="btn btn-success px-3">Book Now</a>
+                        <a href="{% url 'order' %}" class="btn btn-success px-3">Book Now</a>
                         <a href="{% url 'details' i.pk %}" class="btn btn-outline-secondary px-3">View Details</a>
                     </div>
                 </div>

@@ -1,4 +1,6 @@
 from django.db import models
+from django.contrib.auth.models import User
+from django.core.exceptions import ValidationError
 
 # Create your models here.
 class User(models.Model):
@@ -67,3 +69,34 @@ class Review(models.Model):
     
     def __str__(self):
         return f"{self.user.name} - {self.car.cname} ({self.rating} stars)"
+    
+    class Rental(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    car = models.ForeignKey(Car, on_delete=models.CASCADE)
+    pickup_place = models.CharField(max_length=100)
+    dropoff_place = models.CharField(max_length=100)
+    pickup_time = models.TimeField()
+    dropoff_time = models.TimeField()
+    start_date = models.DateField()
+    end_date = models.DateField()
+    total_price = models.DecimalField(max_digits=10, decimal_places=2)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Rental of {self.car.cname} by {self.user.username}"
+
+    def clean(self):
+        # Ensure end_date is not before start_date
+        if self.end_date < self.start_date:
+            raise ValidationError("End date cannot be before start date.")
+        # Ensure total_price is positive
+        if self.total_price <= 0:
+            raise ValidationError("Total price must be greater than zero.")
+        # Ensure pickup_place and dropoff_place are not empty
+        if not self.pickup_place or not self.dropoff_place:
+            raise ValidationError("Pick-up and drop-off places cannot be empty.")
+
+    def save(self, *args, **kwargs):
+        # Run validation before saving
+        self.clean()
+        super().save(*args, **kwargs)

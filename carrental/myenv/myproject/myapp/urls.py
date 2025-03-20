@@ -44,7 +44,7 @@ urlpatterns = [
    path('l_about/',views.l_about,name='l_about'),
    path('car/carsingle/', views.carsingle, name='carsingle'),
    path('delete/<int:pk>',views.delete,name='delete'),
-   path('order/',views.order,name='order'),
+   path('order_form/',views.order_form,name='order_form'),
    path('car/<int:pk>/', views.details, name='details'),
 
    ]
