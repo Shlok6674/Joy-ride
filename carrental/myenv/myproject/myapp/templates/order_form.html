@@ -1,0 +1,212 @@
+{% extends 'header.html' %}
+{% load static %}
+{% block content %}
+
+<section class="hero-wrap hero-wrap-2 js-fullheight" style="background-image: url('{% static 'images/bg_3.jpg' %}');" data-stellar-background-ratio="0.5">
+    <div class="overlay"></div>
+    <div class="container">
+        <div class="row no-gutters slider-text js-fullheight align-items-end justify-content-start">
+            <div class="col-md-9 ftco-animate pb-5">
+                <p class="breadcrumbs">
+                    <span class="mr-2"><a href="{% url 'index' %}">Home <i class="ion-ios-arrow-forward"></i></a></span> 
+                    <span>Cars <i class="ion-ios-arrow-forward"></i></span>
+                    <span>Order Form <i class="ion-ios-arrow-forward"></i></span>
+                </p>
+                <h1 class="mb-3 bread">Complete Your Booking</h1>
+            </div>
+        </div>
+    </div>
+</section>
+
+<div class="container mt-5">
+    <div class="form-wrapper">
+        <div class="total-amount">
+            <h3>Total Amount to be Paid</h3>
+            <p id="total-amount">$0.00</p>
+        </div>
+        <div class="form-content">
+            <h2>Booking for {{ car_name }}</h2>
+            <form id="order-form-submit" method="POST" action="{% url 'rent_car' %}">
+                {% csrf_token %}
+                <input type="hidden" name="car_id" id="car-id" value="{{ car_id }}">
+                <div class="location-container">
+                    <div class="location-field">
+                        <label for="pickup-place">Pick Up Place:</label>
+                        <input type="text" id="pickup-place" name="pickup_place" placeholder="Enter pick up location" required>
+                    </div>
+                    <div class="location-field">
+                        <label for="dropoff-place">Drop Off Place:</label>
+                        <input type="text" id="dropoff-place" name="dropoff_place" placeholder="Enter drop off location" required>
+                    </div>
+                </div>
+                <div class="time-container">
+                    <div class="time-field">
+                        <label for="pickup-time">Pick Up Time:</label>
+                        <input type="time" id="pickup-time" name="pickup_time" required>
+                    </div>
+                    <div class="time-field">
+                        <label for="dropoff-time">Drop Off Time:</label>
+                        <input type="time" id="dropoff-time" name="dropoff_time" required>
+                    </div>
+                </div>
+                <div class="date-container">
+                    <div class="date-field">
+                        <label for="start-date">Start Date:</label>
+                        <input type="date" id="start-date" name="start_date" required>
+                    </div>
+                    <div class="date-field">
+                        <label for="end-date">End Date:</label>
+                        <input type="date" id="end-date" name="end_date" required>
+                    </div>
+                </div>
+                <label for="total-price">Total Price (for form submission):</label>
+                <input type="text" id="total-price" name="total_price" readonly value="$0.00">
+                <div class="form-buttons">
+                    <button type="submit" class="btn btn-success px-3">Confirm Booking</button>
+                    <a href="{% url 'car_list' %}" class="btn btn-outline-secondary px-3">Cancel</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<style>
+    .form-wrapper {
+        display: flex;
+        gap: 30px;
+        max-width: 900px;
+        margin: 0 auto;
+        padding: 20px;
+    }
+
+    .total-amount {
+        background: #fff;
+        padding: 20px;
+        border-radius: 12px;
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+        width: 300px;
+        text-align: center;
+        align-self: flex-start;
+    }
+
+    .total-amount h3 {
+        font-size: 1.3rem;
+        font-weight: 600;
+        color: #333;
+        margin-bottom: 15px;
+    }
+
+    .total-amount p {
+        font-size: 1.5rem;
+        color: #007bff;
+        font-weight: bold;
+    }
+
+    .form-content {
+        background: #fff;
+        padding: 30px;
+        border-radius: 12px;
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+        flex: 1;
+        transition: all 0.3s ease;
+    }
+
+    .form-content h2 {
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: #333;
+        margin-bottom: 20px;
+        text-align: center;
+    }
+
+    .location-container, .time-container, .date-container {
+        display: flex;
+        justify-content: space-between;
+        gap: 20px;
+        margin-bottom: 15px;
+    }
+
+    .location-field, .time-field, .date-field {
+        flex: 1;
+    }
+
+    .form-content label {
+        display: block;
+        margin: 10px 0 5px;
+        color: #555;
+        font-weight: 500;
+    }
+
+    .form-content input {
+        width: 100%;
+        padding: 10px;
+        margin-bottom: 15px;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        box-sizing: border-box;
+        font-size: 1rem;
+    }
+
+    .form-buttons {
+        display: flex;
+        justify-content: space-between;
+        margin-top: 20px;
+    }
+</style>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const startDateInput = document.getElementById('start-date');
+        const endDateInput = document.getElementById('end-date');
+        const pickupTimeInput = document.getElementById('pickup-time');
+        const dropoffTimeInput = document.getElementById('dropoff-time');
+        const totalPriceInput = document.getElementById('total-price');
+        const totalAmountDisplay = document.getElementById('total-amount');
+        const pricePerHour = {{ price }} / 24; // Convert daily price to hourly price (assuming price is per day)
+
+        // Calculate total hours and amount when dates or times change
+        const calculateTotalAmount = () => {
+            const startDate = new Date(startDateInput.value);
+            const endDate = new Date(endDateInput.value);
+            const pickupTime = pickupTimeInput.value;
+            const dropoffTime = dropoffTimeInput.value;
+
+            if (startDate && endDate && pickupTime && dropoffTime) {
+                // Combine date and time for pick-up and drop-off
+                const [pickupHours, pickupMinutes] = pickupTime.split(':').map(Number);
+                const [dropoffHours, dropoffMinutes] = dropoffTime.split(':').map(Number);
+
+                const pickupDateTime = new Date(startDate);
+                pickupDateTime.setHours(pickupHours, pickupMinutes);
+
+                const dropoffDateTime = new Date(endDate);
+                dropoffDateTime.setHours(dropoffHours, dropoffMinutes);
+
+                if (dropoffDateTime >= pickupDateTime) {
+                    // Calculate total hours
+                    const totalMilliseconds = dropoffDateTime - pickupDateTime;
+                    const totalHours = totalMilliseconds / (1000 * 60 * 60);
+
+                    // Calculate total amount
+                    const totalAmount = totalHours * pricePerHour;
+                    totalPriceInput.value = `$${totalAmount.toFixed(2)}`;
+                    totalAmountDisplay.textContent = `$${totalAmount.toFixed(2)}`;
+                } else {
+                    totalPriceInput.value = '$0.00';
+                    totalAmountDisplay.textContent = '$0.00';
+                }
+            } else {
+                totalPriceInput.value = '$0.00';
+                totalAmountDisplay.textContent = '$0.00';
+            }
+        };
+
+        // Add event listeners to update the total amount when inputs change
+        startDateInput.addEventListener('change', calculateTotalAmount);
+        endDateInput.addEventListener('change', calculateTotalAmount);
+        pickupTimeInput.addEventListener('change', calculateTotalAmount);
+        dropoffTimeInput.addEventListener('change', calculateTotalAmount);
+    });
+</script>
+
+{% endblock %}
